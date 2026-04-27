@@ -1,3 +1,5 @@
+const DATA_MANIFEST_URL = "data/councils.json";
+
 const state = {
   council: "all",
   type: "all",
@@ -6,8 +8,8 @@ const state = {
   changesOnly: false
 };
 
-const councils = [...new Set(DA_RECORDS.map((record) => record.council))].sort();
-const types = [...new Set(DA_RECORDS.map((record) => record.type))].sort();
+let daRecords = [];
+let councilSources = [];
 
 const councilFilter = document.querySelector("#councilFilter");
 const typeFilter = document.querySelector("#typeFilter");
@@ -29,53 +31,137 @@ function option(label, value) {
   return element;
 }
 
-councils.forEach((council) => councilFilter.append(option(council, council)));
-types.forEach((type) => typeFilter.append(option(type, type)));
+function setSelectOptions(select, firstLabel, values) {
+  select.innerHTML = "";
+  select.append(option(firstLabel, "all"));
+  values.forEach((value) => select.append(option(value, value)));
+}
 
-councilFilter.addEventListener("change", (event) => {
-  state.council = event.target.value;
-  render();
-});
+function attachEvents() {
+  councilFilter.addEventListener("change", (event) => {
+    state.council = event.target.value;
+    render();
+  });
 
-typeFilter.addEventListener("change", (event) => {
-  state.type = event.target.value;
-  render();
-});
+  typeFilter.addEventListener("change", (event) => {
+    state.type = event.target.value;
+    render();
+  });
 
-valueFilter.addEventListener("change", (event) => {
-  state.minValue = Number(event.target.value);
-  render();
-});
+  valueFilter.addEventListener("change", (event) => {
+    state.minValue = Number(event.target.value);
+    render();
+  });
 
-searchInput.addEventListener("input", (event) => {
-  state.search = event.target.value.trim().toLowerCase();
-  render();
-});
+  searchInput.addEventListener("input", (event) => {
+    state.search = event.target.value.trim().toLowerCase();
+    render();
+  });
 
-changesOnlyButton.addEventListener("click", () => {
-  state.changesOnly = !state.changesOnly;
-  changesOnlyButton.setAttribute("aria-pressed", String(state.changesOnly));
+  changesOnlyButton.addEventListener("click", () => {
+    state.changesOnly = !state.changesOnly;
+    changesOnlyButton.setAttribute("aria-pressed", String(state.changesOnly));
+    render();
+  });
+}
+
+async function loadCouncilData() {
+  setLoadingState();
+  const manifest = await fetchJson(DATA_MANIFEST_URL);
+  councilSources = manifest.councils || [];
+  const councilFiles = await Promise.all(councilSources.map(async (source) => {
+    const payload = await fetchJson(source.path);
+    return normalizeCouncilPayload(source, payload);
+  }));
+
+  daRecords = councilFiles.flatMap((payload) => payload.records);
+  populateFilters();
   render();
-});
+}
+
+async function fetchJson(url) {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`${url} returned ${response.status}`);
+  }
+  return response.json();
+}
+
+function normalizeCouncilPayload(source, payload) {
+  const sourceCouncil = payload.council || source.name;
+  const records = (payload.records || []).map((record) => ({
+    value: 0,
+    changedYesterday: false,
+    changeType: null,
+    changeSummary: null,
+    decision: null,
+    tags: [],
+    ...record,
+    council: record.council || sourceCouncil,
+    sourceCouncil: record.sourceCouncil || sourceCouncil,
+    sourceSystem: record.sourceSystem || payload.sourceSystem || source.status || "unknown",
+    sourceUrl: record.sourceUrl || payload.sourceUrl || source.path,
+    scrapedAt: record.scrapedAt || payload.generatedAt || null,
+    tags: Array.isArray(record.tags) ? record.tags : []
+  }));
+  return { ...payload, records };
+}
+
+function populateFilters() {
+  const councils = [...new Set(daRecords.map((record) => record.council))].sort();
+  const types = [...new Set(daRecords.map((record) => record.type))].sort();
+  setSelectOptions(councilFilter, "All councils", councils);
+  setSelectOptions(typeFilter, "All types", types);
+}
+
+function setLoadingState() {
+  document.querySelector("#dataWindow").textContent = "Loading council JSON";
+  document.querySelector("#newApplications").textContent = "-";
+  document.querySelector("#newApplicationsMeta").textContent = "loading";
+  document.querySelector("#totalValue").textContent = "-";
+  document.querySelector("#totalValueMeta").textContent = "loading";
+  document.querySelector("#topSuburb").textContent = "-";
+  document.querySelector("#topSuburbMeta").textContent = "loading";
+  document.querySelector("#topCouncil").textContent = "-";
+  document.querySelector("#topCouncilMeta").textContent = "loading";
+  document.querySelector("#valueChart").innerHTML = `<div class="empty-state">Loading development value data.</div>`;
+  document.querySelector("#pipelineChart").innerHTML = `<div class="empty-state">Loading application pipeline.</div>`;
+  document.querySelector("#changesFeed").innerHTML = `<div class="empty-state">Loading change feed.</div>`;
+  document.querySelector("#mapPins").innerHTML = "";
+  document.querySelector("#mapMeta").textContent = "Loading";
+  document.querySelector("#notableList").innerHTML = `<div class="empty-state">Loading notable applications.</div>`;
+}
+
+function setErrorState(error) {
+  const message = location.protocol === "file:"
+    ? "Council JSON cannot be loaded from file://. Start a local static server and open the localhost URL."
+    : `Could not load council JSON: ${error.message}`;
+  document.querySelector("#dataWindow").textContent = "Data load error";
+  document.querySelector("#changesFeed").innerHTML = `<div class="empty-state">${message}</div>`;
+  document.querySelector("#valueChart").innerHTML = `<div class="empty-state">${message}</div>`;
+  document.querySelector("#pipelineChart").innerHTML = `<div class="empty-state">${message}</div>`;
+  document.querySelector("#notableList").innerHTML = `<div class="empty-state">${message}</div>`;
+  console.error(error);
+}
 
 function getFilteredRecords() {
-  return DA_RECORDS.filter((record) => {
-    const text = `${record.suburb} ${record.address} ${record.applicant} ${record.id}`.toLowerCase();
+  return daRecords.filter((record) => {
+    const text = `${record.suburb} ${record.address} ${record.applicant} ${record.id} ${record.description || ""}`.toLowerCase();
     return (state.council === "all" || record.council === state.council)
       && (state.type === "all" || record.type === state.type)
-      && record.value >= state.minValue
+      && Number(record.value || 0) >= state.minValue
       && (!state.search || text.includes(state.search))
       && (!state.changesOnly || record.changedYesterday);
   });
 }
 
 function sum(records, key) {
-  return records.reduce((total, record) => total + record[key], 0);
+  return records.reduce((total, record) => total + Number(record[key] || 0), 0);
 }
 
 function groupBy(records, key) {
   return records.reduce((groups, record) => {
-    const value = record[key];
+    const value = record[key] || "Unknown";
     groups[value] = groups[value] || [];
     groups[value].push(record);
     return groups;
@@ -92,7 +178,7 @@ function topGroup(records, key, mode = "count") {
 }
 
 function monthKey(dateText) {
-  return dateText.slice(0, 7);
+  return String(dateText || "").slice(0, 7);
 }
 
 function monthLabel(month) {
@@ -101,18 +187,35 @@ function monthLabel(month) {
 }
 
 function renderMetrics(records) {
-  const latest = new Date(Math.max(...DA_RECORDS.map((record) => new Date(record.lodged))));
+  const dates = daRecords
+    .map((record) => new Date(record.lodged))
+    .filter((date) => !Number.isNaN(date.getTime()))
+    .sort((a, b) => a - b);
+
+  if (!dates.length) {
+    document.querySelector("#dataWindow").textContent = "No data loaded";
+    document.querySelector("#newApplications").textContent = "0";
+    document.querySelector("#newApplicationsMeta").textContent = "no lodgement dates";
+    document.querySelector("#totalValue").textContent = currency.format(0);
+    document.querySelector("#topSuburb").textContent = "-";
+    document.querySelector("#topSuburbMeta").textContent = "no records";
+    document.querySelector("#topCouncil").textContent = "-";
+    document.querySelector("#topCouncilMeta").textContent = "no records";
+    return;
+  }
+
+  const latest = dates[dates.length - 1];
   const weekStart = new Date(latest);
   weekStart.setDate(latest.getDate() - 6);
   const newThisWeek = records.filter((record) => new Date(record.lodged) >= weekStart);
   const [suburb, suburbCount] = topGroup(records, "suburb");
   const [council, councilValue] = topGroup(records, "council", "value");
-  const dates = DA_RECORDS.map((record) => new Date(record.lodged)).sort((a, b) => a - b);
 
-  document.querySelector("#dataWindow").textContent = `${formatDate(dates[0])} to ${formatDate(dates[dates.length - 1])}`;
+  document.querySelector("#dataWindow").textContent = `${formatDate(dates[0])} to ${formatDate(latest)}`;
   document.querySelector("#newApplications").textContent = newThisWeek.length;
   document.querySelector("#newApplicationsMeta").textContent = `since ${formatDate(weekStart)}`;
   document.querySelector("#totalValue").textContent = currency.format(sum(records, "value"));
+  document.querySelector("#totalValueMeta").textContent = "filtered applications";
   document.querySelector("#topSuburb").textContent = suburb;
   document.querySelector("#topSuburbMeta").textContent = `${suburbCount} lodgement${suburbCount === 1 ? "" : "s"}`;
   document.querySelector("#topCouncil").textContent = council;
@@ -124,7 +227,13 @@ function formatDate(date) {
 }
 
 function renderValueChart(records) {
-  const months = [...new Set(DA_RECORDS.map((record) => monthKey(record.lodged)))].sort();
+  const months = [...new Set(daRecords.map((record) => monthKey(record.lodged)).filter(Boolean))].sort();
+  if (!months.length) {
+    document.querySelector("#trendMeta").textContent = "No trend";
+    document.querySelector("#valueChart").innerHTML = `<div class="empty-state">No lodgement value data matches the current filters.</div>`;
+    return;
+  }
+
   const values = months.map((month) => sum(records.filter((record) => monthKey(record.lodged) === month), "value"));
   const rolling = values.map((_, index) => {
     const start = Math.max(0, index - 11);
@@ -168,7 +277,7 @@ function renderValueChart(records) {
 function renderPipeline(records) {
   const order = ["Lodged", "On exhibition", "Under assessment", "Determined", "Refused"];
   const counts = order.map((status) => {
-    if (status === "Refused") return records.filter((record) => record.decision === "Refused").length;
+    if (status === "Refused") return records.filter((record) => record.decision === "Refused" || record.status === "Refused").length;
     if (status === "Determined") return records.filter((record) => record.status === "Determined" && record.decision !== "Refused").length;
     return records.filter((record) => record.status === status).length;
   });
@@ -200,13 +309,13 @@ function renderChanges(records) {
 
   feed.innerHTML = "";
   changed
-    .sort((a, b) => b.value - a.value)
+    .sort((a, b) => Number(b.value || 0) - Number(a.value || 0))
     .forEach((record) => {
       const item = document.querySelector("#feedItemTemplate").content.firstElementChild.cloneNode(true);
       item.querySelector(".change-badge").style.background = changeColor(record.changeType);
       item.querySelector("strong").textContent = `${record.changeType}: ${record.suburb}`;
-      item.querySelector("p").textContent = record.changeSummary;
-      item.querySelector("small").textContent = `${record.council} · ${record.type} · ${currency.format(record.value)} · ${record.id}`;
+      item.querySelector("p").textContent = record.changeSummary || "A tracked field changed since the previous snapshot.";
+      item.querySelector("small").textContent = `${record.council} - ${record.type} - ${currency.format(record.value || 0)} - ${record.id}`;
       feed.append(item);
     });
 }
@@ -231,19 +340,20 @@ function renderMap(records) {
   };
 
   pins.innerHTML = "";
-  document.querySelector("#mapMeta").textContent = `${records.length} pin${records.length === 1 ? "" : "s"}`;
-  records.forEach((record) => {
+  const mapped = records.filter((record) => Number.isFinite(record.lat) && Number.isFinite(record.lng));
+  document.querySelector("#mapMeta").textContent = `${mapped.length} pin${mapped.length === 1 ? "" : "s"}`;
+  mapped.forEach((record) => {
     const pin = document.createElement("button");
     const x = ((record.lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * 86 + 7;
     const y = (1 - (record.lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * 78 + 10;
-    const size = Math.max(12, Math.min(34, 10 + Math.log10(record.value) * 3));
+    const size = Math.max(12, Math.min(34, 10 + Math.log10(Math.max(record.value || 1, 1)) * 3));
     pin.className = "pin";
     pin.type = "button";
     pin.style.left = `${x}%`;
     pin.style.top = `${y}%`;
     pin.style.setProperty("--size", `${size}px`);
     pin.style.setProperty("--pin-color", typeColor(record.type));
-    pin.setAttribute("aria-label", `${record.suburb}, ${record.type}, ${currency.format(record.value)}`);
+    pin.setAttribute("aria-label", `${record.suburb}, ${record.type}, ${currency.format(record.value || 0)}`);
     pins.append(pin);
   });
 }
@@ -265,8 +375,8 @@ function typeColor(type) {
 function renderNotable(records) {
   const container = document.querySelector("#notableList");
   const notable = records
-    .filter((record) => record.value >= 2500000 || record.tags.some((tag) => ["multi-dwelling", "demolition", "childcare", "medical", "pubs", "boarding houses"].includes(tag)))
-    .sort((a, b) => b.value - a.value)
+    .filter((record) => Number(record.value || 0) >= 2500000 || record.tags.some((tag) => ["multi-dwelling", "demolition", "childcare", "medical", "pubs", "boarding houses"].includes(tag)))
+    .sort((a, b) => Number(b.value || 0) - Number(a.value || 0))
     .slice(0, 9);
 
   if (!notable.length) {
@@ -278,7 +388,7 @@ function renderNotable(records) {
     <article class="notable">
       <strong>${record.suburb}: ${record.type}</strong>
       <p>${record.address} by ${record.applicant}</p>
-      <small>${record.council} · ${record.status}${record.decision ? ` / ${record.decision}` : ""} · ${currency.format(record.value)}</small>
+      <small>${record.council} - ${record.status}${record.decision ? ` / ${record.decision}` : ""} - ${currency.format(record.value || 0)}</small>
       <div class="tag-row">${record.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>
     </article>
   `).join("");
@@ -294,4 +404,5 @@ function render() {
   renderNotable(records);
 }
 
-render();
+attachEvents();
+loadCouncilData().catch(setErrorState);

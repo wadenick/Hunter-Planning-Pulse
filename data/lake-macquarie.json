@@ -1,0 +1,95 @@
+{
+  "council": "Lake Macquarie",
+  "generatedAt": "2026-04-27T00:00:00+10:00",
+  "sourceSystem": "sample-seed",
+  "sourceUrl": "sample://lake-macquarie-development-applications",
+  "records": [
+    {
+      "id": "DA-2026-0407",
+      "council": "Lake Macquarie",
+      "suburb": "Charlestown",
+      "address": "310 Pacific Highway",
+      "applicant": "Northcare Health Group",
+      "type": "Medical",
+      "value": 12400000,
+      "lodged": "2026-04-18",
+      "status": "Under assessment",
+      "decision": null,
+      "changedYesterday": true,
+      "changeType": "Value changed",
+      "changeSummary": "Estimated cost increased after amended basement and clinical fitout documents.",
+      "lat": -32.965,
+      "lng": 151.693,
+      "tags": [
+        "high-value",
+        "medical"
+      ],
+      "sourceCouncil": "Lake Macquarie",
+      "sourceSystem": "sample-seed",
+      "sourceUrl": "sample://lake-macquarie-development-applications",
+      "scrapedAt": "2026-04-27T00:00:00+10:00",
+      "raw": {
+        "seed": true,
+        "note": "Sample record for dashboard development until scraper output replaces this file."
+      }
+    },
+    {
+      "id": "DA-2026-0310",
+      "council": "Lake Macquarie",
+      "suburb": "Boolaroo",
+      "address": "Main Road Precinct",
+      "applicant": "Lake Renewal JV",
+      "type": "Multi-dwelling",
+      "value": 56500000,
+      "lodged": "2026-03-28",
+      "status": "On exhibition",
+      "decision": null,
+      "changedYesterday": false,
+      "changeType": null,
+      "changeSummary": null,
+      "lat": -32.954,
+      "lng": 151.622,
+      "tags": [
+        "high-value",
+        "multi-dwelling"
+      ],
+      "sourceCouncil": "Lake Macquarie",
+      "sourceSystem": "sample-seed",
+      "sourceUrl": "sample://lake-macquarie-development-applications",
+      "scrapedAt": "2026-04-27T00:00:00+10:00",
+      "raw": {
+        "seed": true,
+        "note": "Sample record for dashboard development until scraper output replaces this file."
+      }
+    },
+    {
+      "id": "DA-2026-0188",
+      "council": "Lake Macquarie",
+      "suburb": "Belmont",
+      "address": "9 Gen Street",
+      "applicant": "Belmont Living",
+      "type": "Multi-dwelling",
+      "value": 18400000,
+      "lodged": "2026-02-14",
+      "status": "Determined",
+      "decision": "Approved",
+      "changedYesterday": false,
+      "changeType": null,
+      "changeSummary": null,
+      "lat": -33.037,
+      "lng": 151.66,
+      "tags": [
+        "high-value",
+        "multi-dwelling"
+      ],
+      "sourceCouncil": "Lake Macquarie",
+      "sourceSystem": "sample-seed",
+      "sourceUrl": "sample://lake-macquarie-development-applications",
+      "scrapedAt": "2026-04-27T00:00:00+10:00",
+      "raw": {
+        "seed": true,
+        "note": "Sample record for dashboard development until scraper output replaces this file."
+      }
+    }
+  ]
+}

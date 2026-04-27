@@ -1,0 +1,94 @@
+{
+  "council": "Newcastle",
+  "generatedAt": "2026-04-27T00:00:00+10:00",
+  "sourceSystem": "sample-seed/newcastle-tracker-research",
+  "sourceUrl": "https://cn.t1cloud.com/apps/OnAMap/MyServices/On_A_Map_-_DA_Tracker",
+  "records": [
+    {
+      "id": "DA-2026-0419",
+      "council": "Newcastle",
+      "suburb": "Wickham",
+      "address": "18 Railway Lane",
+      "applicant": "Harbour Quarter Pty Ltd",
+      "type": "Multi-dwelling",
+      "value": 38500000,
+      "lodged": "2026-04-20",
+      "status": "On exhibition",
+      "decision": null,
+      "changedYesterday": true,
+      "changeType": "New exhibition",
+      "changeSummary": "Public exhibition opened for a 92-apartment mixed use building near the interchange.",
+      "lat": -32.922,
+      "lng": 151.759,
+      "tags": [
+        "high-value",
+        "multi-dwelling",
+        "commercial"
+      ],
+      "sourceCouncil": "Newcastle",
+      "sourceSystem": "sample-seed/newcastle-tracker-research",
+      "sourceUrl": "https://cn.t1cloud.com/apps/OnAMap/MyServices/On_A_Map_-_DA_Tracker",
+      "scrapedAt": "2026-04-27T00:00:00+10:00",
+      "raw": {
+        "seed": true,
+        "note": "Sample record for dashboard development until scraper output replaces this file."
+      }
+    },
+    {
+      "id": "DA-2026-0334",
+      "council": "Newcastle",
+      "suburb": "Merewether",
+      "address": "24 Ridge Street",
+      "applicant": "Coastal Homes NSW",
+      "type": "Demolition",
+      "value": 680000,
+      "lodged": "2026-04-06",
+      "status": "Determined",
+      "decision": "Approved",
+      "changedYesterday": false,
+      "changeType": null,
+      "changeSummary": null,
+      "lat": -32.945,
+      "lng": 151.744,
+      "tags": [
+        "demolition"
+      ],
+      "sourceCouncil": "Newcastle",
+      "sourceSystem": "sample-seed/newcastle-tracker-research",
+      "sourceUrl": "https://cn.t1cloud.com/apps/OnAMap/MyServices/On_A_Map_-_DA_Tracker",
+      "scrapedAt": "2026-04-27T00:00:00+10:00",
+      "raw": {
+        "seed": true,
+        "note": "Sample record for dashboard development until scraper output replaces this file."
+      }
+    },
+    {
+      "id": "DA-2026-0211",
+      "council": "Newcastle",
+      "suburb": "Hamilton",
+      "address": "118 Beaumont Street",
+      "applicant": "Beaumont Works",
+      "type": "Commercial",
+      "value": 3200000,
+      "lodged": "2026-02-24",
+      "status": "Determined",
+      "decision": "Approved",
+      "changedYesterday": false,
+      "changeType": null,
+      "changeSummary": null,
+      "lat": -32.922,
+      "lng": 151.747,
+      "tags": [
+        "commercial"
+      ],
+      "sourceCouncil": "Newcastle",
+      "sourceSystem": "sample-seed/newcastle-tracker-research",
+      "sourceUrl": "https://cn.t1cloud.com/apps/OnAMap/MyServices/On_A_Map_-_DA_Tracker",
+      "scrapedAt": "2026-04-27T00:00:00+10:00",
+      "raw": {
+        "seed": true,
+        "note": "Sample record for dashboard development until scraper output replaces this file."
+      }
+    }
+  ]
+}

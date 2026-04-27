@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-04-27T00:00:00+10:00",
+  "councils": [
+    {
+      "name": "Newcastle",
+      "slug": "newcastle",
+      "path": "data/newcastle.json",
+      "status": "sample-seed"
+    },
+    {
+      "name": "Lake Macquarie",
+      "slug": "lake-macquarie",
+      "path": "data/lake-macquarie.json",
+      "status": "sample-seed"
+    },
+    {
+      "name": "Maitland",
+      "slug": "maitland",
+      "path": "data/maitland.json",
+      "status": "sample-seed"
+    },
+    {
+      "name": "Cessnock",
+      "slug": "cessnock",
+      "path": "data/cessnock.json",
+      "status": "sample-seed"
+    },
+    {
+      "name": "Port Stephens",
+      "slug": "port-stephens",
+      "path": "data/port-stephens.json",
+      "status": "sample-seed"
+    }
+  ]
+}
