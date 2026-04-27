@@ -11,25 +11,25 @@
       "name": "Lake Macquarie",
       "slug": "lake-macquarie",
       "path": "data/lake-macquarie.json",
-      "status": "sample-seed"
+      "status": "pending-scraper"
     },
     {
       "name": "Maitland",
       "slug": "maitland",
       "path": "data/maitland.json",
-      "status": "sample-seed"
+      "status": "pending-scraper"
     },
     {
       "name": "Cessnock",
       "slug": "cessnock",
       "path": "data/cessnock.json",
-      "status": "sample-seed"
+      "status": "pending-scraper"
     },
     {
       "name": "Port Stephens",
       "slug": "port-stephens",
       "path": "data/port-stephens.json",
-      "status": "sample-seed"
+      "status": "pending-scraper"
     }
   ]
 }
