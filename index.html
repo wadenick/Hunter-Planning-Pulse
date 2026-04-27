@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hunter Planning Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Lower Hunter DA intelligence</p>
+        <h1>Hunter Planning Pulse</h1>
+        <p class="intro">A static dashboard showing what is being lodged, assessed, approved, refused, and changed across Newcastle, Lake Macquarie, Maitland, Cessnock, and Port Stephens.</p>
+      </div>
+      <div class="snapshot" aria-label="Current data snapshot">
+        <span>Data window</span>
+        <strong id="dataWindow">Loading</strong>
+      </div>
+    </header>
+
+    <main>
+      <section class="toolbar" aria-label="Dashboard filters">
+        <label>
+          Council
+          <select id="councilFilter">
+            <option value="all">All councils</option>
+          </select>
+        </label>
+        <label>
+          Application type
+          <select id="typeFilter">
+            <option value="all">All types</option>
+          </select>
+        </label>
+        <label>
+          Minimum value
+          <select id="valueFilter">
+            <option value="0">Any value</option>
+            <option value="500000">$500k+</option>
+            <option value="1000000">$1m+</option>
+            <option value="5000000">$5m+</option>
+            <option value="10000000">$10m+</option>
+          </select>
+        </label>
+        <label>
+          Search
+          <input id="searchInput" type="search" placeholder="Suburb, address, applicant">
+        </label>
+      </section>
+
+      <section class="metrics" aria-label="This week in planning">
+        <article>
+          <span>New applications</span>
+          <strong id="newApplications">0</strong>
+          <small id="newApplicationsMeta">this week</small>
+        </article>
+        <article>
+          <span>Total estimated value</span>
+          <strong id="totalValue">$0</strong>
+          <small id="totalValueMeta">filtered applications</small>
+        </article>
+        <article>
+          <span>Top suburb</span>
+          <strong id="topSuburb">-</strong>
+          <small id="topSuburbMeta">by lodgement count</small>
+        </article>
+        <article>
+          <span>Top council</span>
+          <strong id="topCouncil">-</strong>
+          <small id="topCouncilMeta">by estimated value</small>
+        </article>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="panel span-7">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Development value over time</p>
+              <h2>Monthly lodgement value</h2>
+            </div>
+            <span id="trendMeta" class="pill">Rolling trend</span>
+          </div>
+          <div id="valueChart" class="chart" role="img" aria-label="Monthly lodgement value chart"></div>
+        </article>
+
+        <article class="panel span-5">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Application pipeline</p>
+              <h2>Status mix</h2>
+            </div>
+          </div>
+          <div id="pipelineChart" class="pipeline" aria-label="Application status pipeline"></div>
+        </article>
+
+        <article class="panel span-6">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Killer feature</p>
+              <h2>Changed since yesterday</h2>
+            </div>
+            <button id="changesOnlyButton" class="icon-button" type="button" aria-pressed="false" title="Show changed applications only">Delta</button>
+          </div>
+          <div id="changesFeed" class="feed"></div>
+        </article>
+
+        <article class="panel span-6">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Spatial pulse</p>
+              <h2>Map by type and value</h2>
+            </div>
+            <span id="mapMeta" class="pill">0 pins</span>
+          </div>
+          <div class="map-shell">
+            <div class="map-bg" aria-hidden="true">
+              <span>Port Stephens</span>
+              <span>Newcastle</span>
+              <span>Lake Macquarie</span>
+              <span>Maitland</span>
+              <span>Cessnock</span>
+            </div>
+            <div id="mapPins" class="map-pins" aria-label="Application map pins"></div>
+          </div>
+        </article>
+
+        <article class="panel span-12">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Recent notable applications</p>
+              <h2>High-value, multi-dwelling, commercial, demolition, childcare, medical, pubs, and boarding houses</h2>
+            </div>
+          </div>
+          <div id="notableList" class="notable-list"></div>
+        </article>
+      </section>
+    </main>
+
+    <template id="feedItemTemplate">
+      <div class="feed-item">
+        <span class="change-badge"></span>
+        <div>
+          <strong></strong>
+          <p></p>
+          <small></small>
+        </div>
+      </div>
+    </template>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
