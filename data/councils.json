@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-04-27T00:00:00+10:00",
+  "generatedAt": "2026-04-27T03:36:03.152Z",
   "councils": [
     {
       "name": "Newcastle",
       "slug": "newcastle",
       "path": "data/newcastle.json",
-      "status": "sample-seed"
+      "status": "scraped-dxp-current-month"
     },
     {
       "name": "Lake Macquarie",

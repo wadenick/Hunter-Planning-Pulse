@@ -54,8 +54,18 @@ The dashboard expects records shaped like the files in `data/*.json`:
 
 Dashboard copy and downstream exports should treat scraped tracker data as a convenience view of public council records. Council portals remain the authoritative source for legal status, plans, conditions, and formal notices.
 
-## Dry-run result on 2026-04-27
+## Live DXP scraper result on 2026-04-27
 
-`scripts/scrape-newcastle.mjs` successfully fetched both historical eTrack last-28-days result pages. The conservative parser found zero application-reference rows on both pages and ignored the `Search Dates 31/03/2026 to 27/04/2026` banner as page chrome.
+The first live scraper now uses the TechnologyOne DXP guest session and `LocalGovernment/DxpApi/PublicApplication/Query` endpoint behind the public Application Search app:
 
-Next parser step: inspect a historical eTrack search page known to contain records, or search by a specific Newcastle application reference, then harden row extraction against that markup before writing live records into `data/newcastle.json`.
+- App URL: https://cn.t1cloud.com/apps/Applications/Search/MyServices/Application_Search
+- Guest logon: `LocalGovernment/DxpApi/Guest/Logon`
+- Current-month lodgements: `SelectedFilters=[{ FilterSetCode: "LodgedDate", FilterCode: "THISMONTH" }]`
+- Current-month determinations: `SelectedFilters=[{ FilterSetCode: "DecisionDate", FilterCode: "THISMONTH" }]`
+
+`node scripts/scrape-newcastle.mjs --write` fetched 144 current-month lodged rows and 361 current-month determined rows, then merged them into 433 unique Newcastle records in `data/newcastle.json`.
+
+Known first-pass limitations:
+- The public list does not expose estimated development value, applicant, or coordinates in the query response, so those fields are empty or zero for now.
+- Some rows do not expose a usable property address, so their suburb remains blank and the dashboard groups them as `Unknown`.
+- Decision labels are not the legal determination outcome unless the public status text explicitly says approved, refused, or withdrawn.
