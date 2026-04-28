@@ -82,6 +82,7 @@ function normalizeCouncilPayload(source, payload) {
     tags: [],
     ...record,
     council: record.council || sourceCouncil,
+    suburb: record.suburb || inferSuburb(record.address || record.raw?.formattedTitle),
     sourceCouncil: record.sourceCouncil || sourceCouncil,
     sourceSystem: record.sourceSystem || payload.sourceSystem || source.status || "unknown",
     sourceUrl: record.sourceUrl || payload.sourceUrl || source.path,
@@ -90,6 +91,19 @@ function normalizeCouncilPayload(source, payload) {
     tags: Array.isArray(record.tags) ? record.tags : []
   }));
   return { ...payload, records };
+}
+
+function inferSuburb(address) {
+  const beforePostcode = String(address || "").match(/\b(.+?)\s+NSW\s+\d{4}\b/i)?.[1];
+  if (!beforePostcode) return "";
+  const streetTypes = new Set([
+    "Avenue", "Boulevard", "Circuit", "Close", "Crescent", "Drive", "Esplanade", "Grove",
+    "Highway", "Lane", "Parade", "Place", "Road", "Street", "Terrace", "Way"
+  ]);
+  const words = beforePostcode.trim().split(/\s+/);
+  const streetTypeIndex = words.findLastIndex((word) => streetTypes.has(word.replace(/[.,]/g, "")));
+  if (streetTypeIndex < 0 || streetTypeIndex === words.length - 1) return "";
+  return words.slice(streetTypeIndex + 1).join(" ");
 }
 
 function recordPortalUrl(record) {
@@ -165,11 +179,12 @@ function groupBy(records, key) {
   }, {});
 }
 
-function topGroup(records, key) {
+function topGroup(records, key, options = {}) {
   const groups = groupBy(records, key);
   const entries = Object.entries(groups);
-  if (!entries.length) return ["-", 0];
-  return entries
+  const filteredEntries = options.excludeUnknown ? entries.filter(([name]) => name !== "Unknown") : entries;
+  if (!filteredEntries.length) return ["-", 0];
+  return filteredEntries
     .map(([name, grouped]) => [name, grouped.length])
     .sort((a, b) => b[1] - a[1])[0];
 }
@@ -180,7 +195,7 @@ function monthKey(dateText) {
 
 function monthLabel(month) {
   const date = new Date(`${month}-01T00:00:00`);
-  return date.toLocaleDateString("en-AU", { month: "short", year: "2-digit" });
+  return date.toLocaleDateString("en-AU", { month: "short", year: "numeric" });
 }
 
 function shouldLabelMonth(month, index, months) {
@@ -218,7 +233,7 @@ function renderMetrics(records) {
   const weekStart = new Date(latest);
   weekStart.setDate(latest.getDate() - 6);
   const newThisWeek = records.filter((record) => new Date(record.lodged) >= weekStart);
-  const [suburb, suburbCount] = topGroup(records, "suburb");
+  const [suburb, suburbCount] = topGroup(records, "suburb", { excludeUnknown: true });
   const [council, councilCount] = topGroup(records, "council");
 
   document.querySelector("#dataWindow").textContent = `${formatDate(dates[0])} to ${formatDate(latest)}`;
@@ -275,7 +290,7 @@ function renderLodgementChart(records) {
     return `<text class="axis-label" x="${x}" y="${height - 12}" text-anchor="middle">${monthLabel(month)}</text>`;
   }).join("");
 
-  document.querySelector("#trendMeta").textContent = `${rolling.at(-1) || 0} rolling lodgements`;
+  document.querySelector("#trendMeta").textContent = `${rolling.at(-1) || 0} in trailing 12 months`;
   document.querySelector("#lodgementChart").innerHTML = `
     <svg viewBox="0 0 ${width} ${height}" aria-hidden="true">
       <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="#cfd8d4" />
@@ -288,24 +303,27 @@ function renderLodgementChart(records) {
 }
 
 function renderPipeline(records) {
-  const order = ["Lodged", "On exhibition", "Under assessment", "Determined", "Refused"];
-  const counts = order.map((status) => {
-    if (status === "Refused") return records.filter((record) => record.decision === "Refused" || record.status === "Refused").length;
-    if (status === "Determined") return records.filter((record) => record.status === "Determined" && record.decision !== "Refused").length;
-    return records.filter((record) => record.status === status).length;
-  });
-  const max = Math.max(...counts, 1);
+  const entries = Object.entries(groupBy(records, "status"))
+    .map(([status, grouped]) => [status, grouped.length])
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+  if (!entries.length) {
+    document.querySelector("#pipelineChart").innerHTML = `<div class="empty-state">No statuses match the current filters.</div>`;
+    return;
+  }
+
+  const max = Math.max(...entries.map(([, count]) => count), 1);
   const width = 520;
-  const height = 300;
-  const rowHeight = 48;
+  const height = Math.max(220, entries.length * 44 + 36);
+  const rowHeight = 44;
   const colors = ["#2f6f9f", "#008b8b", "#b47b10", "#16745a", "#d45d4c"];
-  const rows = order.map((label, index) => {
-    const y = 30 + index * rowHeight;
-    const barWidth = 300 * (counts[index] / max);
+  const rows = entries.map(([label, count], index) => {
+    const y = 24 + index * rowHeight;
+    const barWidth = 300 * (count / max);
     return `
       <text class="axis-label" x="0" y="${y + 19}">${label}</text>
-      <rect x="145" y="${y}" width="${Math.max(barWidth, counts[index] ? 8 : 0)}" height="28" rx="6" fill="${colors[index]}"></rect>
-      <text class="axis-label" x="${160 + barWidth}" y="${y + 19}">${counts[index]}</text>
+      <rect x="145" y="${y}" width="${Math.max(barWidth, count ? 8 : 0)}" height="28" rx="6" fill="${colors[index % colors.length]}"></rect>
+      <text class="axis-label" x="${160 + barWidth}" y="${y + 19}">${count}</text>
     `;
   }).join("");
 
