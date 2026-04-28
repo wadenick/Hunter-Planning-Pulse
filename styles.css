@@ -290,6 +290,20 @@ input {
   background: #fbfcfb;
 }
 
+.record-link {
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.record-link:hover,
+.record-link:focus-visible {
+  border-color: #9db7ad;
+  box-shadow: 0 10px 24px rgba(24, 34, 38, 0.1);
+  outline: none;
+  transform: translateY(-1px);
+}
+
 .change-badge {
   width: 12px;
   height: 12px;

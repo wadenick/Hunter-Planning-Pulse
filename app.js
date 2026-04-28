@@ -87,10 +87,28 @@ function normalizeCouncilPayload(source, payload) {
     sourceCouncil: record.sourceCouncil || sourceCouncil,
     sourceSystem: record.sourceSystem || payload.sourceSystem || source.status || "unknown",
     sourceUrl: record.sourceUrl || payload.sourceUrl || source.path,
+    portalUrl: record.portalUrl || record.detailUrl || null,
     scrapedAt: record.scrapedAt || payload.generatedAt || null,
     tags: Array.isArray(record.tags) ? record.tags : []
   }));
   return { ...payload, records };
+}
+
+function recordPortalUrl(record) {
+  if (record.portalUrl) return record.portalUrl;
+  if (record.sourceSystem === "city-of-newcastle-dxp-public-application" && record.raw?.applicationId) {
+    return `https://cn.t1cloud.com/apps/Applications/Details/MyServices/Application_Details/${encodeURIComponent(record.raw.applicationId)}`;
+  }
+  return /^https?:\/\//.test(record.sourceUrl || "") ? record.sourceUrl : null;
+}
+
+function applyRecordLink(element, record) {
+  const url = recordPortalUrl(record);
+  if (!url) return;
+  element.href = url;
+  element.target = "_blank";
+  element.rel = "noopener";
+  element.setAttribute("aria-label", `Open ${record.id} in ${record.council} portal`);
 }
 
 function populateFilters() {
@@ -294,6 +312,7 @@ function renderChanges(records) {
     .sort((a, b) => String(b.lodged || "").localeCompare(String(a.lodged || "")))
     .forEach((record) => {
       const item = document.querySelector("#feedItemTemplate").content.firstElementChild.cloneNode(true);
+      applyRecordLink(item, record);
       item.querySelector(".change-badge").style.background = changeColor(record.changeType);
       item.querySelector("strong").textContent = `${record.changeType}: ${record.suburb}`;
       item.querySelector("p").textContent = record.changeSummary || "A tracked field changed since the previous snapshot.";
@@ -366,14 +385,33 @@ function renderNotable(records) {
     return;
   }
 
-  container.innerHTML = notable.map((record) => `
-    <article class="notable">
-      <strong>${record.suburb}: ${record.type}</strong>
-      <p>${record.address} by ${record.applicant}</p>
-      <small>${record.council} - ${record.status}${record.decision ? ` / ${record.decision}` : ""} - ${record.id}</small>
-      <div class="tag-row">${record.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>
-    </article>
-  `).join("");
+  container.innerHTML = "";
+  notable.forEach((record) => {
+    const item = document.createElement("a");
+    item.className = "notable record-link";
+    applyRecordLink(item, record);
+
+    const title = document.createElement("strong");
+    title.textContent = `${record.suburb}: ${record.type}`;
+
+    const description = document.createElement("p");
+    description.textContent = `${record.address} by ${record.applicant || "unknown applicant"}`;
+
+    const meta = document.createElement("small");
+    meta.textContent = `${record.council} - ${record.status}${record.decision ? ` / ${record.decision}` : ""} - ${record.id}`;
+
+    const tagRow = document.createElement("div");
+    tagRow.className = "tag-row";
+    record.tags.forEach((tag) => {
+      const tagElement = document.createElement("span");
+      tagElement.className = "tag";
+      tagElement.textContent = tag;
+      tagRow.append(tagElement);
+    });
+
+    item.append(title, description, meta, tagRow);
+    container.append(item);
+  });
 }
 
 function render() {

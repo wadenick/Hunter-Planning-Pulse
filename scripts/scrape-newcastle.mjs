@@ -5,6 +5,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const GROUP_ID = "28d146fc-808b-4e3d-a486-59ddbd718224";
 const BASE_URL = "https://cn.t1cloud.com/Services/ENV";
 const SOURCE_URL = "https://cn.t1cloud.com/apps/Applications/Search/MyServices/Application_Search";
+const DETAIL_URL = "https://cn.t1cloud.com/apps/Applications/Details/MyServices/Application_Details";
 const SYSTEM = "city-of-newcastle-dxp-public-application";
 const OUTPUT_PATH = new URL("../data/newcastle.json", import.meta.url);
 const MANIFEST_PATH = new URL("../data/councils.json", import.meta.url);
@@ -126,6 +127,7 @@ function normaliseRow(row, source, scrapedAt) {
     sourceCouncil: "Newcastle",
     sourceSystem: SYSTEM,
     sourceUrl: SOURCE_URL,
+    portalUrl: `${DETAIL_URL}/${encodeURIComponent(row.ApplicationId)}`,
     scrapedAt,
     raw: {
       sourceKey: source.key,
@@ -276,6 +278,7 @@ async function main() {
     generatedAt: scrapedAt,
     pageSize,
     sourceUrl: SOURCE_URL,
+    detailUrl: DETAIL_URL,
     sources: fetched.map(({ source, totalRecordCount, rows }) => ({ source, totalRecordCount, fetched: rows.length })),
     recordCount: records.length,
     sample: records.slice(0, 5)
