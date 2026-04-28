@@ -1,4 +1,4 @@
-const DATA_MANIFEST_URL = "data/councils.json";
+const DASHBOARD_DATA_URL = "data/dashboard.json";
 
 const state = {
   council: "all",
@@ -9,6 +9,7 @@ const state = {
 
 let daRecords = [];
 let councilSources = [];
+let dashboardMeta = null;
 
 const councilFilter = document.querySelector("#councilFilter");
 const typeFilter = document.querySelector("#typeFilter");
@@ -47,20 +48,17 @@ function attachEvents() {
   changesOnlyButton.addEventListener("click", () => {
     state.changesOnly = !state.changesOnly;
     changesOnlyButton.setAttribute("aria-pressed", String(state.changesOnly));
+    changesOnlyButton.textContent = state.changesOnly ? "Showing changed" : "Show changed only";
     render();
   });
 }
 
 async function loadCouncilData() {
   setLoadingState();
-  const manifest = await fetchJson(DATA_MANIFEST_URL);
-  councilSources = manifest.councils || [];
-  const councilFiles = await Promise.all(councilSources.map(async (source) => {
-    const payload = await fetchJson(source.path);
-    return normalizeCouncilPayload(source, payload);
-  }));
-
-  daRecords = councilFiles.flatMap((payload) => payload.records);
+  const dashboard = await fetchJson(DASHBOARD_DATA_URL);
+  dashboardMeta = dashboard;
+  councilSources = dashboard.councils || [];
+  daRecords = normalizeCouncilPayload({ name: "Dashboard", path: DASHBOARD_DATA_URL, status: "dashboard-summary" }, dashboard).records;
   populateFilters();
   render();
 }
@@ -185,6 +183,18 @@ function monthLabel(month) {
   return date.toLocaleDateString("en-AU", { month: "short", year: "2-digit" });
 }
 
+function shouldLabelMonth(month, index, months) {
+  if (months.length <= 12) return true;
+  const monthNumber = month.slice(5, 7);
+  const isFirst = index === 0;
+  const isLast = index === months.length - 1;
+  const isJanuary = monthNumber === "01";
+  const maxAnnualLabels = months.length > 84 ? 2 : 1;
+  const year = Number(month.slice(0, 4));
+  const includeAnnual = isJanuary && (!Number.isFinite(year) || year % maxAnnualLabels === 0);
+  return isFirst || isLast || includeAnnual;
+}
+
 function renderMetrics(records) {
   const dates = daRecords
     .map((record) => new Date(record.lodged))
@@ -215,7 +225,9 @@ function renderMetrics(records) {
   document.querySelector("#newApplications").textContent = newThisWeek.length;
   document.querySelector("#newApplicationsMeta").textContent = `since ${formatDate(weekStart)}`;
   document.querySelector("#totalApplications").textContent = records.length;
-  document.querySelector("#totalApplicationsMeta").textContent = "filtered records";
+  document.querySelector("#totalApplicationsMeta").textContent = dashboardMeta?.recordCount > daRecords.length
+    ? `filtered from ${daRecords.length} dashboard records`
+    : "filtered records";
   document.querySelector("#topSuburb").textContent = suburb;
   document.querySelector("#topSuburbMeta").textContent = `${suburbCount} lodgement${suburbCount === 1 ? "" : "s"}`;
   document.querySelector("#topCouncil").textContent = council;
@@ -258,6 +270,7 @@ function renderLodgementChart(records) {
     return `<rect class="bar" x="${x}" y="${y}" width="${barWidth}" height="${Math.max(barHeight, counts[index] ? 2 : 0)}" rx="5"><title>${monthLabel(month)}: ${counts[index]} lodgement${counts[index] === 1 ? "" : "s"}</title></rect>`;
   }).join("");
   const labels = months.map((month, index) => {
+    if (!shouldLabelMonth(month, index, months)) return "";
     const x = pad + (chartWidth / months.length) * index + chartWidth / months.length / 2;
     return `<text class="axis-label" x="${x}" y="${height - 12}" text-anchor="middle">${monthLabel(month)}</text>`;
   }).join("");

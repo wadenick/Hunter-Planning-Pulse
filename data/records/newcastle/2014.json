@@ -1,0 +1,44 @@
+{
+  "council": "Newcastle",
+  "slug": "newcastle",
+  "year": "2014",
+  "generatedAt": "2026-04-28T07:23:56.148Z",
+  "recordCount": 1,
+  "records": [
+    {
+      "id": "CD2014/0436",
+      "council": "Newcastle",
+      "suburb": "",
+      "address": "43 Fairfield Avenue New Lambton NSW 2305",
+      "applicant": "",
+      "type": "Complying Development",
+      "description": "Electronic Lodgement - nathan.bartley@facs.nsw.gov.au - Remove one tree",
+      "value": 0,
+      "lodged": "2014-09-24",
+      "status": "Determined",
+      "decision": null,
+      "changedYesterday": false,
+      "changeType": "Determination",
+      "changeSummary": "Decision date recorded for Complying Development Certificate - Historic Applications.",
+      "lat": null,
+      "lng": null,
+      "tags": [],
+      "sourceCouncil": "Newcastle",
+      "sourceSystem": "city-of-newcastle-dxp-public-application",
+      "sourceUrl": "https://cn.t1cloud.com/apps/Applications/Search/MyServices/Application_Search",
+      "scrapedAt": "2026-04-28T00:45:36.017Z",
+      "raw": {
+        "sourceKey": "determined-this-month",
+        "applicationId": 37427,
+        "applicationType": "PDCDCCHA",
+        "applicationTypeDescription": "Complying Development Certificate - Historic Applications",
+        "fileId": "CD2014/0436",
+        "formattedTitle": "CD2014/0436 - Complying Development Certificate - Historic Applications - 43 Fairfield Avenue New Lambton NSW 2305",
+        "statusCode": "D",
+        "statusDescription": "Determined",
+        "lodged": "2014-09-24",
+        "determined": "2026-04-21"
+      }
+    }
+  ]
+}

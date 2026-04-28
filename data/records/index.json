@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-04-28T07:23:56.148Z",
+  "chunks": [
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2026",
+      "path": "data/records/newcastle/2026.json",
+      "recordCount": 323
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2025",
+      "path": "data/records/newcastle/2025.json",
+      "recordCount": 37
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2024",
+      "path": "data/records/newcastle/2024.json",
+      "recordCount": 7
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2023",
+      "path": "data/records/newcastle/2023.json",
+      "recordCount": 9
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2022",
+      "path": "data/records/newcastle/2022.json",
+      "recordCount": 3
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2021",
+      "path": "data/records/newcastle/2021.json",
+      "recordCount": 4
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2020",
+      "path": "data/records/newcastle/2020.json",
+      "recordCount": 3
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2019",
+      "path": "data/records/newcastle/2019.json",
+      "recordCount": 7
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2018",
+      "path": "data/records/newcastle/2018.json",
+      "recordCount": 2
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2017",
+      "path": "data/records/newcastle/2017.json",
+      "recordCount": 2
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2016",
+      "path": "data/records/newcastle/2016.json",
+      "recordCount": 3
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2015",
+      "path": "data/records/newcastle/2015.json",
+      "recordCount": 36
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2014",
+      "path": "data/records/newcastle/2014.json",
+      "recordCount": 1
+    },
+    {
+      "council": "Newcastle",
+      "slug": "newcastle",
+      "year": "2012",
+      "path": "data/records/newcastle/2012.json",
+      "recordCount": 2
+    }
+  ]
+}
