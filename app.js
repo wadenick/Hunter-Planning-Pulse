@@ -195,19 +195,30 @@ function monthKey(dateText) {
 
 function monthLabel(month) {
   const date = new Date(`${month}-01T00:00:00`);
-  return date.toLocaleDateString("en-AU", { month: "short", year: "numeric" });
+  return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function monthRange(months) {
+  if (!months.length) return [];
+  const [startYear, startMonth] = months[0].split("-").map(Number);
+  const [endYear, endMonth] = months.at(-1).split("-").map(Number);
+  const cursor = new Date(startYear, startMonth - 1, 1);
+  const end = new Date(endYear, endMonth - 1, 1);
+  const range = [];
+
+  while (cursor <= end) {
+    range.push(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`);
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
+  return range;
 }
 
 function shouldLabelMonth(month, index, months) {
   if (months.length <= 12) return true;
   const monthNumber = month.slice(5, 7);
-  const isFirst = index === 0;
-  const isLast = index === months.length - 1;
-  const isJanuary = monthNumber === "01";
-  const maxAnnualLabels = months.length > 84 ? 2 : 1;
-  const year = Number(month.slice(0, 4));
-  const includeAnnual = isJanuary && (!Number.isFinite(year) || year % maxAnnualLabels === 0);
-  return isFirst || isLast || includeAnnual;
+  const isHalfYear = monthNumber === "01" || monthNumber === "07";
+  return isHalfYear;
 }
 
 function renderMetrics(records) {
@@ -254,13 +265,14 @@ function formatDate(date) {
 }
 
 function renderLodgementChart(records) {
-  const months = [...new Set(daRecords.map((record) => monthKey(record.lodged)).filter(Boolean))].sort();
-  if (!months.length) {
+  const dataMonths = [...new Set(daRecords.map((record) => monthKey(record.lodged)).filter(Boolean))].sort();
+  if (!dataMonths.length) {
     document.querySelector("#trendMeta").textContent = "No trend";
     document.querySelector("#lodgementChart").innerHTML = `<div class="empty-state">No lodgement dates match the current filters.</div>`;
     return;
   }
 
+  const months = monthRange(dataMonths);
   const counts = months.map((month) => records.filter((record) => monthKey(record.lodged) === month).length);
   const rolling = counts.map((_, index) => {
     const start = Math.max(0, index - 11);
@@ -270,31 +282,33 @@ function renderLodgementChart(records) {
   const width = 780;
   const height = 300;
   const pad = 42;
+  const padBottom = 66;
   const chartWidth = width - pad * 2;
-  const chartHeight = height - pad * 2;
+  const chartHeight = height - pad - padBottom;
   const barWidth = chartWidth / months.length * 0.56;
   const points = rolling.map((value, index) => {
     const x = pad + (chartWidth / Math.max(months.length - 1, 1)) * index;
-    const y = height - pad - (value / maxCount) * chartHeight;
+    const y = height - padBottom - (value / maxCount) * chartHeight;
     return `${x},${y}`;
   }).join(" ");
   const bars = months.map((month, index) => {
     const x = pad + (chartWidth / months.length) * index + (chartWidth / months.length - barWidth) / 2;
     const barHeight = (counts[index] / maxCount) * chartHeight;
-    const y = height - pad - barHeight;
+    const y = height - padBottom - barHeight;
     return `<rect class="bar" x="${x}" y="${y}" width="${barWidth}" height="${Math.max(barHeight, counts[index] ? 2 : 0)}" rx="5"><title>${monthLabel(month)}: ${counts[index]} lodgement${counts[index] === 1 ? "" : "s"}</title></rect>`;
   }).join("");
   const labels = months.map((month, index) => {
     if (!shouldLabelMonth(month, index, months)) return "";
     const x = pad + (chartWidth / months.length) * index + chartWidth / months.length / 2;
-    return `<text class="axis-label" x="${x}" y="${height - 12}" text-anchor="middle">${monthLabel(month)}</text>`;
+    const y = height - 24;
+    return `<text class="axis-label" x="${x}" y="${y}" text-anchor="end" transform="rotate(-40 ${x} ${y})">${monthLabel(month)}</text>`;
   }).join("");
 
   document.querySelector("#trendMeta").textContent = `${rolling.at(-1) || 0} in trailing 12 months`;
   document.querySelector("#lodgementChart").innerHTML = `
     <svg viewBox="0 0 ${width} ${height}" aria-hidden="true">
-      <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="#cfd8d4" />
-      <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height - pad}" stroke="#cfd8d4" />
+      <line x1="${pad}" y1="${height - padBottom}" x2="${width - pad}" y2="${height - padBottom}" stroke="#cfd8d4" />
+      <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height - padBottom}" stroke="#cfd8d4" />
       ${bars}
       <polyline class="trend" points="${points}" />
       ${labels}
