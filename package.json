@@ -1,0 +1,16 @@
+{
+  "name": "hunter-planning-pulse",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "update:data": "node scripts/update-data.mjs",
+    "validate:data": "node scripts/validate-data.mjs",
+    "build": "node scripts/build-pages.mjs",
+    "check": "node --check app.js && node --check scripts/scrape-newcastle.mjs && node --check scripts/update-data.mjs && node --check scripts/validate-data.mjs && node --check scripts/build-pages.mjs && npm run validate:data",
+    "serve": "python3 -m http.server 8000"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
